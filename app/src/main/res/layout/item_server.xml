@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item_layout"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:gravity="center_vertical"
+    android:background="@drawable/server_item_selector">
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_logo"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:src="@drawable/fast"/>
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="14sp"
+        android:text="Smart Location"
+        android:textColor="@color/white"
+        android:layout_marginLeft="12dp"/>
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_sel"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/server_selector"/>
+</androidx.appcompat.widget.LinearLayoutCompat>
