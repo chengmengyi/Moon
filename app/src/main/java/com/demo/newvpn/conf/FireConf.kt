@@ -24,7 +24,7 @@ object FireConf {
             val jsonArray = JSONArray(json)
             for (index in 0 until jsonArray.length()){
                 val jsonObject = jsonArray.getJSONObject(index)
-                localList.add(
+                list.add(
                     ServerBean(
                         pwd = jsonObject.optString("ma"),
                         account = jsonObject.optString("hao"),
@@ -35,7 +35,7 @@ object FireConf {
                     )
                 )
             }
-            localList.forEach { it.writeServerId() }
+            list.forEach { it.writeServerId() }
         }
     }
 
