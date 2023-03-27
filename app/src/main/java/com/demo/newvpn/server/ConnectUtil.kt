@@ -10,9 +10,11 @@ import com.github.shadowsocks.aidl.ShadowsocksConnection
 import com.github.shadowsocks.bg.BaseService
 import com.github.shadowsocks.preference.DataStore
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 object ConnectUtil : ShadowsocksConnection.Callback{
+    private var connecting=false
     private var baseAc:BaseAc?=null
     var state = BaseService.State.Stopped
     var currentServer= ServerBean()
@@ -51,13 +53,14 @@ object ConnectUtil : ShadowsocksConnection.Callback{
 
     fun isDisconnected()= state== BaseService.State.Stopped
 
+    fun isConnectingOrStopping()= state== BaseService.State.Connecting||state== BaseService.State.Stopping
+
     fun connectServerSuccess(connect: Boolean)=if (connect) isConnected() else isDisconnected()
 
     override fun stateChanged(state: BaseService.State, profileName: String?, msg: String?) {
         this.state=state
         if (isConnected()){
             lastServer= currentServer
-            TimeUtil.start()
         }
         if (isDisconnected()){
             TimeUtil.end()
@@ -70,7 +73,6 @@ object ConnectUtil : ShadowsocksConnection.Callback{
         this.state=state
         if (isConnected()){
             lastServer= currentServer
-            TimeUtil.start()
             iConnectCall?.connectSuccess()
         }
     }

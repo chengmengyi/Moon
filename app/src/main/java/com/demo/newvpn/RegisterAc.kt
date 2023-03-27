@@ -17,6 +17,11 @@ object RegisterAc {
     var isFront=true
     private var hotReload=false
     private var job: Job?=null
+    private var iAppHome:IAppHome?=null
+
+    fun setAppHome(iAppHome:IAppHome?){
+        this.iAppHome=iAppHome
+    }
 
     fun register(application: Application){
         application.registerActivityLifecycleCallbacks(callback)
@@ -32,6 +37,7 @@ object RegisterAc {
             job=null
             if (pages==1){
                 isFront=true
+                iAppHome?.onHome(true)
                 if (hotReload){
                     if (ActivityUtils.isActivityExistsInStack(HomeAc::class.java)){
                         activity.startActivity(Intent(activity, MainAc::class.java))
@@ -49,6 +55,7 @@ object RegisterAc {
             pages--
             if (pages<=0){
                 isFront=false
+                iAppHome?.onHome(false)
                 job= GlobalScope.launch {
                     delay(3000L)
                     hotReload=true
@@ -61,5 +68,9 @@ object RegisterAc {
         override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
         override fun onActivityDestroyed(activity: Activity) {}
+    }
+
+    interface IAppHome{
+        fun onHome(home:Boolean)
     }
 }

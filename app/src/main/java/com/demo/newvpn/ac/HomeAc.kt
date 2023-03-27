@@ -24,14 +24,19 @@ import com.demo.newvpn.server.TimeUtil
 import com.demo.newvpn.util.AdLimitManager
 import com.github.shadowsocks.utils.StartService
 import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_home.*
 import kotlinx.android.synthetic.main.drawer_home.*
+import kotlinx.coroutines.*
 import java.lang.Exception
 
-class HomeAc :BaseAc(), ITimeCall, IConnectCall {
+class HomeAc :BaseAc(), ITimeCall, IConnectCall, RegisterAc.IAppHome {
     private var lastClickTime=0L
     private var canClick=true
     private var permission=false
+    private var connect=false
+    private var time=0
+    private var connectJob:Job?=null
     private val maxPx= SizeUtils.dp2px(104F)
     private var translationX: ValueAnimator?=null
     private val showConnectAd by lazy { ShowOpenAd(LocalConf.CONNECT,this) }
@@ -52,8 +57,12 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
     override fun initView() {
         immersionBar.statusBarView(top).init()
         TimeUtil.setInterface(this)
+        RegisterAc.setAppHome(this)
         ConnectUtil.init(this,this)
         setClick()
+        if(ConnectUtil.isConnected()){
+            hideGuideView()
+        }
     }
 
     private fun setClick(){
@@ -130,7 +139,7 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
         canClick=false
         if(ConnectUtil.isConnected()){
             updateConnectingView()
-            ConnectUtil.disconnect()
+//            ConnectUtil.disconnect()
             startTranslationXAnimator(false)
         }else{
             updateServerInfo()
@@ -153,51 +162,72 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
         hideGuideView()
         updateConnectingView()
         TimeUtil.resetTime()
-        ConnectUtil.connect()
+//        ConnectUtil.connect()
         startTranslationXAnimator(true)
     }
 
     private fun startTranslationXAnimator(connect: Boolean){
+        this.connect=connect
         translationX= ValueAnimator.ofInt(0, 100).apply {
             duration=10000L
             interpolator = LinearInterpolator()
             addUpdateListener {
                 val pro = it.animatedValue as Int
                 iv_connecting.translationX=getTranslationY(connect, pro)
-                val duration = (10 * (pro / 100.0F)).toInt()
-                if(duration in 3..9){
-                    if (connectServerSuccess(connect)){
-                        if (null!=LoadAd.getAdByType(LocalConf.CONNECT)){
-                            stopTranslator()
-                            iv_connecting.translationX=getTranslationY(connect, 100)
-                            showConnectAd.showOpenAd(
-                                showing = {
-                                    updateConnectResultView(connect,jump=false)
-                                },
-                                close = {
-                                    updateConnectResultView(connect)
-                                }
-                            )
-                        }else{
-                            if(AdLimitManager.hasLimit()){
-                                stopTranslator()
-                                iv_connecting.translationX=getTranslationY(connect, 100)
-                                updateConnectResultView(connect)
-                            }
-                        }
-                    }
-
-                }else if (duration>=10){
-                    stopTranslator()
-                    iv_connecting.translationX=getTranslationY(connect, 100)
-                    updateConnectResultView(connect)
-                }
             }
             start()
+        }
+
+        connectJob=GlobalScope.launch {
+            time=0
+            while (true){
+                if (!isActive){
+                    break
+                }
+                delay(1000L)
+                time++
+                if (time==3){
+                    if(connect){
+                        ConnectUtil.connect()
+                    }else{
+                        ConnectUtil.disconnect()
+                    }
+                }
+                withContext(Dispatchers.Main){
+                    if(time in 3..9){
+                        if(connectServerSuccess(connect)){
+                            if (null!=LoadAd.getAdByType(LocalConf.CONNECT)){
+                                cancel()
+                                stopTranslator()
+                                showConnectAd.showOpenAd(
+                                    showing = {
+                                        updateConnectResultView(connect,jump=false)
+                                    },
+                                    close = {
+                                        updateConnectResultView(connect)
+                                    }
+                                )
+                            }else{
+                                if(AdLimitManager.hasLimit()){
+                                    cancel()
+                                    stopTranslator()
+                                    updateConnectResultView(connect)
+                                }
+                            }
+                        }
+                    }else if (time>=10){
+                        cancel()
+                        stopTranslator()
+                        updateConnectResultView(connect)
+                    }
+                }
+
+            }
         }
     }
 
     private fun updateConnectResultView(connect: Boolean,jump:Boolean=true){
+        iv_connecting.translationX=getTranslationY(connect, 100)
         if (connectServerSuccess(connect)){
             if (connect){
                 updateConnectedView()
@@ -212,6 +242,9 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
     }
 
     private fun toResultAc(connect: Boolean,jump:Boolean=true){
+        if(ConnectUtil.isConnected()){
+            TimeUtil.start()
+        }
         if(RegisterAc.isFront&&jump){
             if (!connectServerSuccess(connect)){
                 toast(if (connect) "Connect Fail" else "Disconnect Fail")
@@ -261,6 +294,7 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
 
     override fun connectSuccess() {
         updateConnectedView()
+        TimeUtil.start()
     }
 
     override fun disconnectSuccess() {
@@ -272,6 +306,20 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
     private fun stopTranslator(){
         translationX?.removeAllUpdateListeners()
         translationX?.cancel()
+        connectJob?.cancel()
+        connectJob=null
+    }
+
+    override fun onHome(home: Boolean) {
+        if(time<=2){
+            canClick = true
+            stopTranslator()
+            if (connect) {
+                updateStoppedView()
+            } else {
+                updateConnectedView()
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -307,8 +355,10 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
 
     override fun onDestroy() {
         super.onDestroy()
+        stopTranslator()
         ConnectUtil.onDestroy()
         TimeUtil.setInterface(this)
+        RegisterAc.setAppHome(null)
         showHomeBottomAd.stopNativeAd()
     }
 
