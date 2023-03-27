@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Moon</string>
+    <string name="facebook_app_id" translatable="false">690633666149556</string>
 </resources>
