@@ -5,20 +5,23 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.VpnService
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.appcompat.app.AlertDialog
-import androidx.core.animation.doOnEnd
 import com.blankj.utilcode.util.SizeUtils
 import com.demo.newvpn.*
+import com.demo.newvpn.admob.LoadAd
+import com.demo.newvpn.admob.ShowNativeAd
+import com.demo.newvpn.admob.ShowOpenAd
 import com.demo.newvpn.call.IConnectCall
 import com.demo.newvpn.call.ITimeCall
 import com.demo.newvpn.conf.FireConf
 import com.demo.newvpn.conf.LocalConf
 import com.demo.newvpn.server.ConnectUtil
+import com.demo.newvpn.server.ConnectUtil.connectServerSuccess
 import com.demo.newvpn.server.TimeUtil
+import com.demo.newvpn.util.AdLimitManager
 import com.github.shadowsocks.utils.StartService
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.content_home.*
@@ -26,10 +29,13 @@ import kotlinx.android.synthetic.main.drawer_home.*
 import java.lang.Exception
 
 class HomeAc :BaseAc(), ITimeCall, IConnectCall {
+    private var lastClickTime=0L
     private var canClick=true
     private var permission=false
     private val maxPx= SizeUtils.dp2px(104F)
     private var translationX: ValueAnimator?=null
+    private val showConnectAd by lazy { ShowOpenAd(LocalConf.CONNECT,this) }
+    private val showHomeBottomAd by lazy { ShowNativeAd(LocalConf.HOME_BOTTOM,this) }
 
     private val registerResult=registerForActivityResult(StartService()) {
         if (!it && permission) {
@@ -53,7 +59,9 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
     private fun setClick(){
         view_connect.setOnClickListener { clickConnectView() }
         llc_server_list.setOnClickListener {
-            if(canClick&&!drawer_layout.isOpen&&!guideIsShowing()){
+            val time = System.currentTimeMillis() - lastClickTime
+            if(canClick&&!drawer_layout.isOpen&&!guideIsShowing()&&time>500){
+                lastClickTime=System.currentTimeMillis()
                 startActivityForResult(Intent(this,ServerListAc::class.java),313)
             }
         }
@@ -112,7 +120,10 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
                 }
                 show()
             }
+            return
         }
+        LoadAd.load(LocalConf.CONNECT)
+        LoadAd.load(LocalConf.RESULT_BOTTOM)
         if(!canClick){
             return
         }
@@ -148,23 +159,46 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
 
     private fun startTranslationXAnimator(connect: Boolean){
         translationX= ValueAnimator.ofInt(0, 100).apply {
-            duration=3000L
+            duration=10000L
             interpolator = LinearInterpolator()
             addUpdateListener {
                 val pro = it.animatedValue as Int
                 iv_connecting.translationX=getTranslationY(connect, pro)
-//                val duration = (10 * (pro / 100.0F)).toInt()
-            }
-            doOnEnd {
-                updateConnectResultView(connect)
-                toResultAc(connect)
+                val duration = (10 * (pro / 100.0F)).toInt()
+                if(duration in 3..9){
+                    if (connectServerSuccess(connect)){
+                        if (null!=LoadAd.getAdByType(LocalConf.CONNECT)){
+                            stopTranslator()
+                            iv_connecting.translationX=getTranslationY(connect, 100)
+                            showConnectAd.showOpenAd(
+                                showing = {
+                                    updateConnectResultView(connect,jump=false)
+                                },
+                                close = {
+                                    updateConnectResultView(connect)
+                                }
+                            )
+                        }else{
+                            if(AdLimitManager.hasLimit()){
+                                stopTranslator()
+                                iv_connecting.translationX=getTranslationY(connect, 100)
+                                updateConnectResultView(connect)
+                            }
+                        }
+                    }
+
+                }else if (duration>=10){
+                    stopTranslator()
+                    iv_connecting.translationX=getTranslationY(connect, 100)
+                    updateConnectResultView(connect)
+                }
             }
             start()
         }
     }
 
-    private fun updateConnectResultView(connect: Boolean){
-        if (ConnectUtil.connectServerSuccess(connect)){
+    private fun updateConnectResultView(connect: Boolean,jump:Boolean=true){
+        if (connectServerSuccess(connect)){
             if (connect){
                 updateConnectedView()
             }else{
@@ -174,11 +208,12 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
         }else{
             updateStoppedView()
         }
+        toResultAc(connect,jump)
     }
 
-    private fun toResultAc(connect: Boolean){
-        if(RegisterAc.isFront){
-            if (!ConnectUtil.connectServerSuccess(connect)){
+    private fun toResultAc(connect: Boolean,jump:Boolean=true){
+        if(RegisterAc.isFront&&jump){
+            if (!connectServerSuccess(connect)){
                 toast(if (connect) "Connect Fail" else "Disconnect Fail")
             }
             startActivity(Intent(this,ResultAc::class.java).apply {
@@ -234,9 +269,14 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
         }
     }
 
+    private fun stopTranslator(){
+        translationX?.removeAllUpdateListeners()
+        translationX?.cancel()
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode==1000){
+        if (resultCode==313){
             when(data?.getStringExtra("back")){
                 "new_vpn_dis"->{
                     clickConnectView()
@@ -250,6 +290,9 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
     }
 
     override fun onBackPressed() {
+        if (!canClick){
+            return
+        }
         if(guideIsShowing()){
             hideGuideView()
             return
@@ -257,10 +300,16 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall {
         finish()
     }
 
+    override fun onResume() {
+        super.onResume()
+        showHomeBottomAd.showNativeAd()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         ConnectUtil.onDestroy()
         TimeUtil.setInterface(this)
+        showHomeBottomAd.stopNativeAd()
     }
 
     private fun guideIsShowing()=guide_lottie_view.visibility==View.VISIBLE

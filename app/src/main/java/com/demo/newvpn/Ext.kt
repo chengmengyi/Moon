@@ -4,8 +4,16 @@ import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
+import android.os.Build
+import android.util.Log
 import android.view.View
 import android.widget.Toast
+
+fun moonLog(string: String){
+    if (BuildConfig.DEBUG){
+        Log.e("qwer",string)
+    }
+}
 
 fun getLogo(name:String)=when(name){
     "Australia"->R.drawable.australia

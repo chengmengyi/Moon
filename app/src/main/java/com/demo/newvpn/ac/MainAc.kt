@@ -8,35 +8,53 @@ import androidx.core.animation.doOnEnd
 import com.blankj.utilcode.util.ActivityUtils
 import com.demo.newvpn.BaseAc
 import com.demo.newvpn.R
+import com.demo.newvpn.admob.LoadAd
+import com.demo.newvpn.admob.ShowOpenAd
+import com.demo.newvpn.conf.LocalConf
+import com.demo.newvpn.util.AdLimitManager
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainAc : BaseAc() {
     private var animator: ValueAnimator?=null
+    private val showOpenAd by lazy { ShowOpenAd(LocalConf.OPEN,this) }
 
     override fun layout(): Int = R.layout.activity_main
 
     override fun initView() {
+        AdLimitManager.resetRefresh()
+        AdLimitManager.readNum()
+        LoadAd.preAllAd()
         startAnimator()
     }
 
     private fun startAnimator(){
         animator = ValueAnimator.ofInt(0, 100).apply {
-            duration = 3000L
+            duration = 10000L
             interpolator = LinearInterpolator()
             addUpdateListener {
                 val progress = it.animatedValue as Int
                 progress_view.progress = progress
-//                val pro = (10 * (progress / 100.0F)).toInt()
+                val pro = (10 * (progress / 100.0F)).toInt()
+                if(pro in 2..9){
+                    showOpenAd.showOpenAd(
+                        showing = {
+                            stopAnimator()
+                            progress_view.progress = 100
+                        },
+                        close = {
+                            toHomeAc()
+                        }
+                    )
+                }else if (pro>=10){
+                    toHomeAc()
+                }
             }
-            doOnEnd { toHomeAc() }
             start()
         }
     }
 
     private fun toHomeAc(){
-        if(!ActivityUtils.isActivityExistsInStack(HomeAc::class.java)){
-            startActivity(Intent(this,HomeAc::class.java))
-        }
+        startActivity(Intent(this,HomeAc::class.java))
         finish()
     }
 

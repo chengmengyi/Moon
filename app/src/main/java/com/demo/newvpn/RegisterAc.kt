@@ -5,6 +5,9 @@ import android.app.Application
 import android.content.Intent
 import android.os.Bundle
 import com.blankj.utilcode.util.ActivityUtils
+import com.demo.newvpn.ac.HomeAc
+import com.demo.newvpn.ac.MainAc
+import com.google.android.gms.ads.AdActivity
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,11 +32,11 @@ object RegisterAc {
             job=null
             if (pages==1){
                 isFront=true
-//                if (hotReload){
-//                    if (ActivityUtils.isActivityExistsInStack(HomeUI::class.java)){
-//                        activity.startActivity(Intent(activity, MainActivity::class.java))
-//                    }
-//                }
+                if (hotReload){
+                    if (ActivityUtils.isActivityExistsInStack(HomeAc::class.java)){
+                        activity.startActivity(Intent(activity, MainAc::class.java))
+                    }
+                }
                 hotReload=false
             }
         }
@@ -46,12 +49,12 @@ object RegisterAc {
             pages--
             if (pages<=0){
                 isFront=false
-//                job= GlobalScope.launch {
-//                    delay(3000L)
-//                    hotReload=true
-//                    ActivityUtils.finishActivity(MainActivity::class.java)
-//                    ActivityUtils.finishActivity(AdActivity::class.java)
-//                }
+                job= GlobalScope.launch {
+                    delay(3000L)
+                    hotReload=true
+                    ActivityUtils.finishActivity(MainAc::class.java)
+                    ActivityUtils.finishActivity(AdActivity::class.java)
+                }
             }
         }
 

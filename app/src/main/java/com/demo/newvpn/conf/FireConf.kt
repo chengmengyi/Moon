@@ -1,9 +1,15 @@
 package com.demo.newvpn.conf
 
+import android.webkit.WebView
 import com.demo.newvpn.bean.ServerBean
+import com.demo.newvpn.mMoonApp
+import com.demo.newvpn.util.AdLimitManager
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.callback.StringCallback
 import com.lzy.okgo.model.Response
+import com.tencent.mmkv.MMKV
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -17,6 +23,37 @@ object FireConf {
     fun readFireConf(){
         checkIsLimitUser()
         parseServerJson(LocalConf.localServer, localList)
+
+//        val remoteConfig = Firebase.remoteConfig
+//        remoteConfig.fetchAndActivate().addOnCompleteListener {
+//            if(it.isSuccessful){
+//                parseCity(remoteConfig.getString("moon_getsmart"))
+//                parseServerJson(remoteConfig.getString("moon_servlist"), fireList)
+//            }
+//        }
+    }
+
+    private fun saveAd(string: String){
+        AdLimitManager.setNum(string)
+        MMKV.defaultMMKV().encode("moon_ad",string)
+    }
+
+    fun getAdString():String{
+        val value = MMKV.defaultMMKV().decodeString("moon_ad") ?: ""
+        if(value.isEmpty()){
+            return LocalConf.localAd
+        }
+        return value
+    }
+
+    private fun parseCity(string: String){
+        runCatching {
+            cityList.clear()
+            val jsonArray = JSONArray(string)
+            for (index in 0 until jsonArray.length()){
+                cityList.add(jsonArray.optString(index))
+            }
+        }
     }
     
     private fun parseServerJson(json:String,list:ArrayList<ServerBean>){
@@ -26,12 +63,12 @@ object FireConf {
                 val jsonObject = jsonArray.getJSONObject(index)
                 list.add(
                     ServerBean(
-                        pwd = jsonObject.optString("ma"),
-                        account = jsonObject.optString("hao"),
-                        port = jsonObject.optInt("kou"),
-                        country =jsonObject.optString("ji"),
-                        city =jsonObject.optString("ty"),
-                        ip=jsonObject.optString("ip")
+                        pwd = jsonObject.optString("moon_getpwd"),
+                        account = jsonObject.optString("moon_getaccount"),
+                        port = jsonObject.optInt("moon_getport"),
+                        country =jsonObject.optString("moon_getcountry"),
+                        city =jsonObject.optString("moon_getcity"),
+                        ip=jsonObject.optString("moon_getip")
                     )
                 )
             }
@@ -53,12 +90,12 @@ object FireConf {
     }
 
     private fun checkIsLimitUser(){
-        OkGo.get<String>("https://api.myip.com/")
+        OkGo.get<String>("https://ipapi.co/json")
+            .headers("User-Agent", WebView(mMoonApp).settings.userAgentString)
             .execute(object : StringCallback(){
                 override fun onSuccess(response: Response<String>?) {
-//                        ipJson="""{"ip":"89.187.185.11","country":"United States","cc":"IR"}"""
                     try {
-                        isLimitUser = JSONObject(response?.body()?.toString()).optString("cc").limitArea()
+                        isLimitUser = JSONObject(response?.body()?.toString()).optString("country_code").limitArea()
                     }catch (e:Exception){
 
                     }

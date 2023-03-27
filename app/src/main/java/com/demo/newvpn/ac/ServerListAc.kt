@@ -1,20 +1,27 @@
 package com.demo.newvpn.ac
 
 import android.content.Intent
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.demo.newvpn.BaseAc
 import com.demo.newvpn.R
 import com.demo.newvpn.adapter.ServerAdapter
+import com.demo.newvpn.admob.LoadAd
+import com.demo.newvpn.admob.ShowOpenAd
 import com.demo.newvpn.bean.ServerBean
+import com.demo.newvpn.conf.LocalConf
 import com.demo.newvpn.server.ConnectUtil
 import kotlinx.android.synthetic.main.activity_server_list.*
 
 class ServerListAc:BaseAc() {
+    private val showBackAd by lazy { ShowOpenAd(LocalConf.BACK,this) }
+
     override fun layout(): Int = R.layout.activity_server_list
 
     override fun initView() {
         immersionBar.statusBarView(top).init()
+        LoadAd.load(LocalConf.BACK)
         rv_server.apply {
             layoutManager=LinearLayoutManager(this@ServerListAc)
             adapter=ServerAdapter(this@ServerListAc){ click(it) }
@@ -52,6 +59,12 @@ class ServerListAc:BaseAc() {
     }
 
     override fun onBackPressed() {
-        finish()
+        showBackAd.showOpenAd(
+            back = true,
+            showing = {},
+            close = {
+                finish()
+            }
+        )
     }
 }
