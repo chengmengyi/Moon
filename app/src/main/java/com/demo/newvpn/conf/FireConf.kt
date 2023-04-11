@@ -24,13 +24,14 @@ object FireConf {
         checkIsLimitUser()
         parseServerJson(LocalConf.localServer, localList)
 
-//        val remoteConfig = Firebase.remoteConfig
-//        remoteConfig.fetchAndActivate().addOnCompleteListener {
-//            if(it.isSuccessful){
-//                parseCity(remoteConfig.getString("moon_getsmart"))
-//                parseServerJson(remoteConfig.getString("moon_servlist"), fireList)
-//            }
-//        }
+        val remoteConfig = Firebase.remoteConfig
+        remoteConfig.fetchAndActivate().addOnCompleteListener {
+            if(it.isSuccessful){
+                saveAd(remoteConfig.getString("moon_ad"))
+                parseCity(remoteConfig.getString("moon_getsmart"))
+                parseServerJson(remoteConfig.getString("moon_servlist"), fireList)
+            }
+        }
     }
 
     private fun saveAd(string: String){

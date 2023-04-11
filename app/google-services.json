@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "173074722310",
+    "project_id": "moon-8ece7",
+    "storage_bucket": "moon-8ece7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:173074722310:android:b08a88c02f75bf26dd9d87",
+        "android_client_info": {
+          "package_name": "com.moon.fast.internet.pro.tool"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "173074722310-avam9m5rg649vus2at1tcfg7pjlq03uo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALw6inwBgUb3eHrYeQn1lbYP9amerXwjs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "173074722310-avam9m5rg649vus2at1tcfg7pjlq03uo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
