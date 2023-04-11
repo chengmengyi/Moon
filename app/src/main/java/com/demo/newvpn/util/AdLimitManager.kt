@@ -1,5 +1,6 @@
 package com.demo.newvpn.util
 
+import com.demo.newvpn.conf.FireConf
 import com.tencent.mmkv.MMKV
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -51,6 +52,8 @@ object AdLimitManager {
     }
 
     fun hasLimit()= current_c>= max_c|| current_s>= max_s
+
+    fun limitInterstitialAd()=FireConf.moonCloak=="1"&&FireConf.cloak
 
     private fun key(string:String)="${string}...${SimpleDateFormat("yyyy-MM-dd").format(Date(System.currentTimeMillis()))}"
 }

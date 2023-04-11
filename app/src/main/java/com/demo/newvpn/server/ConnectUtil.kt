@@ -1,9 +1,15 @@
 package com.demo.newvpn.server
 
+import android.os.Bundle
 import com.demo.newvpn.BaseAc
+import com.demo.newvpn.admob.LoadAd
 import com.demo.newvpn.call.IConnectCall
 import com.demo.newvpn.bean.ServerBean
 import com.demo.newvpn.conf.FireConf
+import com.demo.newvpn.conf.LocalConf
+import com.demo.newvpn.tba.OkUtil
+import com.demo.newvpn.util.PointSet
+import com.demo.newvpn.util.ReferrerUtil
 import com.github.shadowsocks.Core
 import com.github.shadowsocks.aidl.IShadowsocksService
 import com.github.shadowsocks.aidl.ShadowsocksConnection
@@ -30,14 +36,32 @@ object ConnectUtil : ShadowsocksConnection.Callback{
     }
 
     fun connect(){
+        if(currentServer.isLocal){
+            if(currentServer.isSuperFast()){
+                connectServer(LocalConf.localServerList.random())
+            }else{
+                connectServer(currentServer)
+            }
+        }else{
+            if(currentServer.cityId==0){
+                OkUtil.getServerInfoByCityId(null,0){
+                    fastServer=it
+                    connectServer(it)
+                }
+            }else{
+                connectServer(currentServer)
+            }
+        }
+    }
+
+    private fun connectServer(serverBean: ServerBean){
         state= BaseService.State.Connecting
         GlobalScope.launch {
-            if (currentServer.isSuperFast()){
-                fastServer=FireConf.getRandomServer()
-                DataStore.profileId = fastServer.getServerId()
-            }else{
-                DataStore.profileId = currentServer.getServerId()
-            }
+            delay(500L)
+            DataStore.profileId = serverBean.getServerId()
+            val bundle = Bundle()
+            bundle.putBoolean("Isbuy",ReferrerUtil.isBuyUser())
+            PointSet.point("moon_startvpn",bundle=bundle)
             Core.startService()
         }
     }
@@ -45,6 +69,9 @@ object ConnectUtil : ShadowsocksConnection.Callback{
     fun disconnect(){
         state= BaseService.State.Stopping
         GlobalScope.launch {
+            val bundle = Bundle()
+            bundle.putInt("time",TimeUtil.getTimeInt())
+            PointSet.point("moon_stratime",bundle=bundle)
             Core.stopService()
         }
     }
@@ -61,6 +88,10 @@ object ConnectUtil : ShadowsocksConnection.Callback{
         this.state=state
         if (isConnected()){
             lastServer= currentServer
+            PointSet.point("moon_vpnt")
+            if(FireConf.isPlanB){
+                LoadAd.removeAllAd()
+            }
         }
         if (isDisconnected()){
             TimeUtil.end()

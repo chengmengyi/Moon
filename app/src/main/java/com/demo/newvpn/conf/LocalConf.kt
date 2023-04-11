@@ -1,5 +1,8 @@
 package com.demo.newvpn.conf
 
+import com.demo.newvpn.bean.CountryBean
+import com.demo.newvpn.bean.ServerBean
+
 object LocalConf {
     const val email=""
     const val url=""
@@ -9,6 +12,44 @@ object LocalConf {
     const val RESULT_BOTTOM="n_moon_buttom"
     const val CONNECT="i_moon_lin"
     const val BACK="i_moon_back"
+
+    val localCountryList= arrayListOf(
+        CountryBean(
+            countryName = "Japan",
+            cityName = "LocalTokyo",
+            cityId = 0,
+            isLocal = true
+        ),
+        CountryBean(
+            countryName = "UnitedStates",
+            cityName = "LocalNewYork",
+            cityId = 0,
+            isLocal = true
+        ),
+    )
+
+    val localServerList= arrayListOf(
+        ServerBean(
+            ip = "100.223.52.78",
+            port = 100,
+            pwd = "123456",
+            account = "chacha20-ietf-poly1305",
+            country = "Japan",
+            city = "LocalTokyo",
+            cityId = 0,
+            isLocal = true
+        ),
+        ServerBean(
+            ip = "100.223.52.77",
+            port = 100,
+            pwd = "123456",
+            account = "chacha20-ietf-poly1305",
+            country = "UnitedStates",
+            city = "LocalNewYork",
+            cityId = 0,
+            isLocal = true
+        ),
+    )
 
     const val localServer="""[
     {

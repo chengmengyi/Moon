@@ -9,9 +9,11 @@ import com.demo.newvpn.R
 import com.demo.newvpn.adapter.ServerAdapter
 import com.demo.newvpn.admob.LoadAd
 import com.demo.newvpn.admob.ShowOpenAd
+import com.demo.newvpn.bean.CountryBean
 import com.demo.newvpn.bean.ServerBean
 import com.demo.newvpn.conf.LocalConf
 import com.demo.newvpn.server.ConnectUtil
+import com.demo.newvpn.tba.OkUtil
 import kotlinx.android.synthetic.main.activity_server_list.*
 
 class ServerListAc:BaseAc() {
@@ -22,9 +24,28 @@ class ServerListAc:BaseAc() {
     override fun initView() {
         immersionBar.statusBarView(top).init()
         LoadAd.load(LocalConf.BACK)
+        val list = intent.getSerializableExtra("list") as ArrayList<CountryBean>
+        list.add(0, CountryBean(isLocal = list.first().isLocal))
         rv_server.apply {
             layoutManager=LinearLayoutManager(this@ServerListAc)
-            adapter=ServerAdapter(this@ServerListAc){ click(it) }
+            adapter=ServerAdapter(this@ServerListAc,list){
+                if(it.isLocal){
+                    if(it.fast()){
+                        click(ServerBean(isLocal = true))
+                    }else{
+                        val filter = LocalConf.localServerList.filter { bean -> bean.country == it.countryName }
+                        if(filter.isEmpty()){
+                            click(LocalConf.localServerList.random())
+                        }else{
+                            click(filter.first())
+                        }
+                    }
+                }else{
+                    OkUtil.getServerInfoByCityId(supportFragmentManager,it.cityId){ serverBean->
+                        click(serverBean)
+                    }
+                }
+            }
         }
         iv_back.setOnClickListener { onBackPressed() }
     }

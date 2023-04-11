@@ -40,7 +40,9 @@ object RegisterAc {
                 iAppHome?.onHome(true)
                 if (hotReload){
                     if (ActivityUtils.isActivityExistsInStack(HomeAc::class.java)){
-                        activity.startActivity(Intent(activity, MainAc::class.java))
+                        activity.startActivity(Intent(activity, MainAc::class.java).apply {
+                            putExtra("cold",false)
+                        })
                     }
                 }
                 hotReload=false

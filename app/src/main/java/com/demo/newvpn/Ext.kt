@@ -4,39 +4,49 @@ import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
-import android.os.Build
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.tencent.mmkv.MMKV
 
-fun moonLog(string: String){
+fun moonLogAd(string: String){
     if (BuildConfig.DEBUG){
-        Log.e("qwer",string)
+        Log.e("qwerad",string)
     }
 }
 
-fun getLogo(name:String)=when(name){
-    "Australia"->R.drawable.australia
-    "Belgium"->R.drawable.belgium
-    "Brazil"->R.drawable.brazil
-    "Canada"->R.drawable.canada
-    "France"->R.drawable.france
-    "Germany"->R.drawable.germany
-    "India"->R.drawable.india
-    "Ireland"->R.drawable.ireland
-    "Italy"->R.drawable.italy
-    "KoreaSouth"->R.drawable.koreasouth
-    "Netherlands"->R.drawable.netherlands
-    "NewZealand"->R.drawable.newzealand
-    "Norway"->R.drawable.norway
-    "Singapore"->R.drawable.singapore
-    "Sweden"->R.drawable.sweden
-    "Switzerland"->R.drawable.switzerland
-    "Turkey"->R.drawable.turkey
-    "UnitedKingdom"->R.drawable.unitedkingdom
-    "UnitedStates"->R.drawable.unitedstates
+
+fun moonLogEvent(string: String){
+    if (BuildConfig.DEBUG){
+        Log.e("qwerevent",string)
+    }
+}
+
+fun getLogo(name:String)=when(name.replace(" ".toRegex(), "").toLowerCase()){
+    "australia"-> R.drawable.australia
+    "belgium"-> R.drawable.belgium
+    "brazil"-> R.drawable.brazil
+    "canada"-> R.drawable.canada
+    "france"-> R.drawable.france
+    "hongkong"-> R.drawable.hongkong
+    "germany"-> R.drawable.germany
+    "india"-> R.drawable.india
+    "ireland"-> R.drawable.ireland
+    "italy"-> R.drawable.italy
+    "koreasouth"-> R.drawable.koreasouth
+    "netherlands"-> R.drawable.netherlands
+    "newzealand"-> R.drawable.newzealand
+    "norway"-> R.drawable.norway
+    "singapore"-> R.drawable.singapore
+    "sweden"-> R.drawable.sweden
+    "switzerland"-> R.drawable.switzerland
+    "turkey"-> R.drawable.turkey
+    "unitedkingdom"-> R.drawable.unitedkingdom
+    "unitedstates"-> R.drawable.unitedstates
+    "japan"-> R.drawable.japan
     else-> R.drawable.fast
 }
+
 
 fun processName(applicationContext: Application): String {
     val pid = android.os.Process.myPid()
@@ -71,4 +81,49 @@ fun Context.getNetStatus(): Int {
         return 1
     }
     return 1
+}
+
+
+fun saveNoReferrerTag(){
+    MMKV.defaultMMKV().encode("moon_install_no_referrer",1)
+}
+
+fun uploadNoReferrerTag()= MMKV.defaultMMKV().decodeInt("moon_install_no_referrer")==1
+
+fun saveHasReferrerTag(){
+    MMKV.defaultMMKV().encode("moon_install_has_referrer",1)
+}
+
+fun uploadHasReferrerTag()= MMKV.defaultMMKV().decodeInt("moon_install_has_referrer")==1
+
+
+fun getAdNetWork(string: String):String{
+    if(string.contains("facebook")) return "facebook"
+    else if(string.contains("admob")) return "admob"
+    return ""
+}
+
+fun getAdType(adType: String):String{
+    when(adType){
+        "o"->return "open"
+        "i"->return "Interstitial"
+        "n"->return "native"
+    }
+    return ""
+}
+
+fun getPrecisionType(precisionType:Int)=when(precisionType){
+    1->"ESTIMATED"
+    2->"PUBLISHER_PROVIDED"
+    3->"PRECISE"
+    else->"UNKNOWN"
+}
+
+fun str2Int(string: String):Int{
+    try {
+        return string.toInt()
+    }catch (e:Exception){
+
+    }
+    return 0
 }

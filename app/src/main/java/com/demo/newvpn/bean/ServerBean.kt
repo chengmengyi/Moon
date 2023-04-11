@@ -9,7 +9,9 @@ class ServerBean(
     val port:Int=0,
     val country:String="Smart Location",
     val city:String="",
-    val ip:String=""
+    val ip:String="",
+    val cityId:Int=0,
+    val isLocal:Boolean=false
 ) {
 
 

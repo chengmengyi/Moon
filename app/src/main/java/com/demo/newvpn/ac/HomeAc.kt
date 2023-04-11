@@ -21,7 +21,9 @@ import com.demo.newvpn.conf.LocalConf
 import com.demo.newvpn.server.ConnectUtil
 import com.demo.newvpn.server.ConnectUtil.connectServerSuccess
 import com.demo.newvpn.server.TimeUtil
+import com.demo.newvpn.tba.OkUtil
 import com.demo.newvpn.util.AdLimitManager
+import com.demo.newvpn.util.PointSet
 import com.github.shadowsocks.utils.StartService
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.activity_main.*
@@ -35,7 +37,8 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall, RegisterAc.IAppHome {
     private var canClick=true
     private var permission=false
     private var connect=false
-    private var time=0
+    private var time=-1
+    private var autoConnect=false
     private var connectJob:Job?=null
     private val maxPx= SizeUtils.dp2px(104F)
     private var translationX: ValueAnimator?=null
@@ -58,20 +61,41 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall, RegisterAc.IAppHome {
         immersionBar.statusBarView(top).init()
         TimeUtil.setInterface(this)
         RegisterAc.setAppHome(this)
+        updateServerInfo()
         ConnectUtil.init(this,this)
         setClick()
         if(ConnectUtil.isConnected()){
             hideGuideView()
         }
+        checkAuto(intent)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.let { checkAuto(it) }
+    }
+
+    private fun checkAuto(intent: Intent){
+        if(intent.getBooleanExtra("autoConnect",false)){
+            autoConnect=true
+            view_connect.performClick()
+        }
     }
 
     private fun setClick(){
+        guide_view.setOnClickListener {  }
         view_connect.setOnClickListener { clickConnectView() }
+        guide_lottie_view.setOnClickListener { view_connect.performClick() }
         llc_server_list.setOnClickListener {
             val time = System.currentTimeMillis() - lastClickTime
             if(canClick&&!drawer_layout.isOpen&&!guideIsShowing()&&time>500){
                 lastClickTime=System.currentTimeMillis()
-                startActivityForResult(Intent(this,ServerListAc::class.java),313)
+                OkUtil.getServerList(supportFragmentManager){
+                    startActivityForResult(Intent(this,ServerListAc::class.java)
+                        .apply {
+                            putExtra("list",it)
+                        },313)
+                }
             }
         }
         iv_set.setOnClickListener {
@@ -131,6 +155,9 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall, RegisterAc.IAppHome {
             }
             return
         }
+        if(!autoConnect){
+            PointSet.point("moon_clickvpn")
+        }
         LoadAd.load(LocalConf.CONNECT)
         LoadAd.load(LocalConf.RESULT_BOTTOM)
         if(!canClick){
@@ -138,6 +165,7 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall, RegisterAc.IAppHome {
         }
         canClick=false
         if(ConnectUtil.isConnected()){
+            LoadAd.checkDisconnectAd()
             updateConnectingView()
 //            ConnectUtil.disconnect()
             startTranslationXAnimator(false)
@@ -163,6 +191,7 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall, RegisterAc.IAppHome {
         updateConnectingView()
         TimeUtil.resetTime()
 //        ConnectUtil.connect()
+        PointSet.point("moon_getauth")
         startTranslationXAnimator(true)
     }
 
@@ -230,30 +259,29 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall, RegisterAc.IAppHome {
         iv_connecting.translationX=getTranslationY(connect, 100)
         if (connectServerSuccess(connect)){
             if (connect){
+                PointSet.point("moon_vpnf")
                 updateConnectedView()
             }else{
                 updateStoppedView()
                 updateServerInfo()
             }
+            toResultAc(connect,jump)
         }else{
             updateStoppedView()
+            toast(if (connect) "Connect Fail" else "Disconnect Fail")
         }
-        toResultAc(connect,jump)
+        canClick=true
     }
 
     private fun toResultAc(connect: Boolean,jump:Boolean=true){
-        if(ConnectUtil.isConnected()){
+        if(connect&&jump){
             TimeUtil.start()
         }
         if(RegisterAc.isFront&&jump){
-            if (!connectServerSuccess(connect)){
-                toast(if (connect) "Connect Fail" else "Disconnect Fail")
-            }
             startActivity(Intent(this,ResultAc::class.java).apply {
                 putExtra("connect",connect)
             })
         }
-        canClick=true
     }
     private fun getTranslationY(connect: Boolean,pro:Int):Float{
         val fl = maxPx/ 100F * pro
@@ -284,8 +312,13 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall, RegisterAc.IAppHome {
 
     private fun updateServerInfo(){
         val currentServer = ConnectUtil.currentServer
-        tv_name.text=currentServer.country
-        iv_logo.setImageResource(getLogo(currentServer.country))
+        val countryName=if (ConnectUtil.currentServer.cityId==0&&!currentServer.isLocal){
+            "Smart Location"
+        }else{
+            currentServer.country
+        }
+        tv_name.text=countryName
+        iv_logo.setImageResource(getLogo(countryName))
     }
 
     override fun connectTime(time: String) {
@@ -311,7 +344,8 @@ class HomeAc :BaseAc(), ITimeCall, IConnectCall, RegisterAc.IAppHome {
     }
 
     override fun onHome(home: Boolean) {
-        if(time<=2){
+        if(time in 0..2){
+            time=-1
             canClick = true
             stopTranslator()
             if (connect) {

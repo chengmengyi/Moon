@@ -2,7 +2,7 @@ package com.demo.newvpn.admob
 
 import com.demo.newvpn.BaseAc
 import com.demo.newvpn.conf.LocalConf
-import com.demo.newvpn.moonLog
+import com.demo.newvpn.moonLogAd
 import com.demo.newvpn.util.AdLimitManager
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.FullScreenContentCallback
@@ -28,7 +28,7 @@ class ShowOpenAd(
                 close.invoke()
                 return
             }
-            moonLog("show $type ad")
+            moonLogAd("show $type ad")
             showing.invoke()
             when(ad){
                 is InterstitialAd ->{

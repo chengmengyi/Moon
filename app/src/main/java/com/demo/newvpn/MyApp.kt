@@ -3,6 +3,7 @@ package com.demo.newvpn
 import android.app.Application
 import com.demo.newvpn.ac.HomeAc
 import com.demo.newvpn.conf.FireConf
+import com.demo.newvpn.tba.TbaUtil
 import com.github.shadowsocks.Core
 import com.tencent.mmkv.MMKV
 
@@ -18,5 +19,6 @@ class MyApp:Application() {
         MMKV.initialize(this)
         FireConf.readFireConf()
         RegisterAc.register(this)
+        TbaUtil.uploadEvent()
     }
 }

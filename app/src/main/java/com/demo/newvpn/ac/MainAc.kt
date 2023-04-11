@@ -10,17 +10,23 @@ import com.demo.newvpn.BaseAc
 import com.demo.newvpn.R
 import com.demo.newvpn.admob.LoadAd
 import com.demo.newvpn.admob.ShowOpenAd
+import com.demo.newvpn.conf.FireConf
 import com.demo.newvpn.conf.LocalConf
+import com.demo.newvpn.server.ConnectUtil
 import com.demo.newvpn.util.AdLimitManager
+import com.demo.newvpn.util.PointSet
+import com.demo.newvpn.util.ReferrerUtil
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainAc : BaseAc() {
+    private var coldLoad=true
     private var animator: ValueAnimator?=null
     private val showOpenAd by lazy { ShowOpenAd(LocalConf.OPEN,this) }
 
     override fun layout(): Int = R.layout.activity_main
 
     override fun initView() {
+        coldLoad=intent.getBooleanExtra("cold",true)
         AdLimitManager.resetRefresh()
         AdLimitManager.readNum()
         LoadAd.preAllAd()
@@ -42,19 +48,31 @@ class MainAc : BaseAc() {
                             progress_view.progress = 100
                         },
                         close = {
-                            toHomeAc()
+                            checkPlan()
                         }
                     )
                 }else if (pro>=10){
-                    toHomeAc()
+                    checkPlan()
                 }
             }
             start()
         }
     }
 
-    private fun toHomeAc(){
-        startActivity(Intent(this,HomeAc::class.java))
+    private fun checkPlan(){
+        if(!ReferrerUtil.isBuyUser()){
+            toHomeAc()
+            return
+        }
+        FireConf.checkIsPlanB(coldLoad)
+        PointSet.setUserProperty()
+        toHomeAc(autoConnect = FireConf.isPlanB&&ConnectUtil.isDisconnected())
+    }
+
+    private fun toHomeAc(autoConnect:Boolean=false){
+        startActivity(Intent(this, HomeAc::class.java).apply {
+            putExtra("autoConnect",autoConnect)
+        })
         finish()
     }
 

@@ -10,7 +10,7 @@ import androidx.constraintlayout.utils.widget.ImageFilterView
 import com.blankj.utilcode.util.SizeUtils
 import com.demo.newvpn.BaseAc
 import com.demo.newvpn.R
-import com.demo.newvpn.moonLog
+import com.demo.newvpn.moonLogAd
 import com.demo.newvpn.show
 import com.demo.newvpn.util.AdLimitManager
 import com.google.android.gms.ads.nativead.NativeAd
@@ -54,7 +54,7 @@ class ShowNativeAd(
     }
     
     private fun show(ad: NativeAd) {
-        moonLog("show $type ad ")
+        moonLogAd("show $type ad ")
         val viewNative = baseAc.findViewById<NativeAdView>(R.id.native_view)
         viewNative.iconView=baseAc.findViewById(R.id.native_logo)
         (viewNative.iconView as ImageFilterView).setImageDrawable(ad.icon?.drawable)

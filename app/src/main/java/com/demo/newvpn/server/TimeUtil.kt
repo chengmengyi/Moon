@@ -37,6 +37,8 @@ object TimeUtil {
         timeJob=null
     }
 
+    fun getTimeInt()=time.toInt()
+
     fun getTotalTime()=transTime(time)
 
     private fun transTime(t:Long):String{

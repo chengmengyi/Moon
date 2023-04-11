@@ -3,6 +3,9 @@ package com.demo.newvpn.conf
 import android.webkit.WebView
 import com.demo.newvpn.bean.ServerBean
 import com.demo.newvpn.mMoonApp
+import com.demo.newvpn.str2Int
+import com.demo.newvpn.tba.OkUtil
+import com.demo.newvpn.tba.OkUtil.checkUserCloak
 import com.demo.newvpn.util.AdLimitManager
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
@@ -12,9 +15,16 @@ import com.lzy.okgo.model.Response
 import com.tencent.mmkv.MMKV
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.*
+import kotlin.collections.ArrayList
 
 object FireConf {
     var isLimitUser=false
+    var cloak=true
+    private var planb_start="1"
+    private var planb_ratio="100"
+    var isPlanB=false
+    var moonCloak="2"
 
     private val cityList= arrayListOf<String>()
     private val localList= arrayListOf<ServerBean>()
@@ -27,10 +37,22 @@ object FireConf {
 //        val remoteConfig = Firebase.remoteConfig
 //        remoteConfig.fetchAndActivate().addOnCompleteListener {
 //            if(it.isSuccessful){
-//                parseCity(remoteConfig.getString("moon_getsmart"))
-//                parseServerJson(remoteConfig.getString("moon_servlist"), fireList)
+//                parsePlanConfig(remoteConfig.getString("moon_config"))
+//
+//                val string = remoteConfig.getString("moon_cloak")
+//                if (string.isNotEmpty()){
+//                    moonCloak=string
+//                }
 //            }
 //        }
+    }
+
+    private fun parsePlanConfig(string: String){
+        runCatching {
+            val jsonObject = JSONObject(string)
+            planb_start=jsonObject.optString("moon_start")
+            planb_ratio=jsonObject.optString("moon_ratio")
+        }
     }
 
     private fun saveAd(string: String){
@@ -90,17 +112,21 @@ object FireConf {
     }
 
     private fun checkIsLimitUser(){
-        OkGo.get<String>("https://ipapi.co/json")
-            .headers("User-Agent", WebView(mMoonApp).settings.userAgentString)
-            .execute(object : StringCallback(){
-                override fun onSuccess(response: Response<String>?) {
-                    try {
-                        isLimitUser = JSONObject(response?.body()?.toString()).optString("country_code").limitArea()
-                    }catch (e:Exception){
+        OkUtil.requestIp {
+            checkUserCloak()
+//            isLimitUser = if(OkUtil.countryCode.isNotEmpty()){
+//                OkUtil.countryCode.limitArea()
+//            }else{
+//                Locale.getDefault().country.limitArea()
+//            }
+        }
+    }
 
-                    }
-                }
-            })
+    fun checkIsPlanB(isColdLoad: Boolean){
+        if((isColdLoad&&planb_start=="1")||planb_start=="2"){
+            val nextInt = Random().nextInt(100)
+            isPlanB = str2Int(planb_ratio)>=nextInt
+        }
     }
 
     private fun String.limitArea()=contains("IR")||contains("MO")||contains("HK")||contains("CN")

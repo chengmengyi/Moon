@@ -4,7 +4,7 @@ import com.demo.newvpn.bean.AdmobDataBean
 import com.demo.newvpn.bean.AdmobResultBean
 import com.demo.newvpn.conf.FireConf
 import com.demo.newvpn.conf.LocalConf
-import com.demo.newvpn.moonLog
+import com.demo.newvpn.moonLogAd
 import com.demo.newvpn.util.AdLimitManager
 import org.json.JSONObject
 
@@ -15,11 +15,15 @@ object LoadAd:BaseLoad() {
 
     fun load(type:String,tryNum:Int=0){
         if(AdLimitManager.hasLimit()){
-            moonLog("limit")
+            moonLogAd("limit")
+            return
+        }
+        if((type==LocalConf.CONNECT||type==LocalConf.BACK)&&AdLimitManager.limitInterstitialAd()){
+            moonLogAd("cloak user limit")
             return
         }
         if(loadingList.contains(type)){
-            moonLog("$type loading")
+            moonLogAd("$type loading")
             return
         }
         if(adResultMap.containsKey(type)){
@@ -28,7 +32,7 @@ object LoadAd:BaseLoad() {
                 if(resultAdBean.expired()){
                     removeAd(type)
                 }else{
-                    moonLog("$type cache")
+                    moonLogAd("$type cache")
                     return
                 }
             }
@@ -91,5 +95,22 @@ object LoadAd:BaseLoad() {
 
     fun removeAd(type: String){
         adResultMap.remove(type)
+    }
+
+    fun removeAllAd(){
+        adResultMap.clear()
+        loadingList.clear()
+        preAllAd()
+        load(LocalConf.BACK)
+    }
+
+    fun checkDisconnectAd(){
+        val list= arrayListOf(LocalConf.CONNECT,LocalConf.BACK,LocalConf.HOME_BOTTOM,LocalConf.RESULT_BOTTOM,)
+        for (type in list) {
+            val resultBean = adResultMap[type]
+            if (null==resultBean||resultBean.expired()){
+                load(type)
+            }
+        }
     }
 }
