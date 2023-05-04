@@ -32,7 +32,7 @@ object FireConf {
 
     fun readFireConf(){
         checkIsLimitUser()
-        parseServerJson(LocalConf.localServer, localList)
+        LocalConf.localServerList.forEach { it.writeServerId() }
 
 //        val remoteConfig = Firebase.remoteConfig
 //        remoteConfig.fetchAndActivate().addOnCompleteListener {
