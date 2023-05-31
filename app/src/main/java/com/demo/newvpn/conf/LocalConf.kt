@@ -4,8 +4,8 @@ import com.demo.newvpn.bean.CountryBean
 import com.demo.newvpn.bean.ServerBean
 
 object LocalConf {
-    const val email=""
-    const val url=""
+    const val email="en2424l53@gmail.com"
+    const val url="https://sites.google.com/view/moon-app/home"
 
     const val OPEN="moon_o"
     const val HOME_BOTTOM="n_moon_home"
@@ -15,163 +15,70 @@ object LocalConf {
 
     val localCountryList= arrayListOf(
         CountryBean(
-            countryName = "Japan",
-            cityName = "LocalTokyo",
+            countryName = "Germany",
+            cityName = "Dusseldorf",
             cityId = 0,
             isLocal = true
-        ),
-        CountryBean(
-            countryName = "UnitedStates",
-            cityName = "LocalNewYork",
-            cityId = 0,
-            isLocal = true
-        ),
+        )
     )
+
 
     val localServerList= arrayListOf(
         ServerBean(
-            ip = "100.223.52.78",
-            port = 100,
-            pwd = "123456",
+            ip = "185.194.216.196",
+            port = 5691,
+            pwd = "9OuPVw#UBajyyzM",
             account = "chacha20-ietf-poly1305",
-            country = "Japan",
-            city = "LocalTokyo",
+            country = "Germany",
+            city = "Dusseldorf",
             cityId = 0,
             isLocal = true
-        ),
-        ServerBean(
-            ip = "100.223.52.77",
-            port = 100,
-            pwd = "123456",
-            account = "chacha20-ietf-poly1305",
-            country = "UnitedStates",
-            city = "LocalNewYork",
-            cityId = 0,
-            isLocal = true
-        ),
+        )
     )
 
-    const val localServer="""[
-    {
-        "moon_getpwd":"123456",
-        "moon_getaccount":"chacha20-ietf-poly1305",
-        "moon_getport":100,
-        "moon_getcountry":"Japan",
-        "moon_getcity":"Tokyo",
-        "moon_getip":"100.223.52.0"
-    },
-    {
-        "moon_getpwd":"123456",
-        "moon_getaccount":"chacha20-ietf-poly1305",
-        "moon_getport":100,
-        "moon_getcountry":"UnitedStates",
-        "moon_getcity":"NewYork",
-        "moon_getip":"100.223.52.1"
-    }
-]"""
 
     const val localAd="""{
-    "max_c":15,
-    "max_s":50,
+    "max_s":"30",
+    "max_c":"5",
     "moon_o":[
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/3419835294",
-            "moontype":"o",
-            "moonsort":2
-        },
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/3419835294A",
-            "moontype":"o",
-            "moonsort":3
-        },
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/8691691433",
-            "moontype":"i",
-            "moonsort":1
-        }
+    {
+           "moonfrom":"admob",
+           "moonadid":"ca-app-pub-6337191878285963/1937976979",
+           "moontype":"o",
+           "moonsort":1
+           }
     ],
     "n_moon_home":[
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/2247696110",
-            "moontype":"n",
-            "moonsort":2
-        },
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/2247696110A",
-            "moontype":"n",
-            "moonsort":3
-        },
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/1044960115",
-            "moontype":"n",
-            "moonsort":1
-        }
+    {
+           "moonfrom":"admob",
+           "moonadid":"ca-app-pub-6337191878285963/3362739281",
+           "moontype":"n",
+           "moonsort":1
+           }
     ],
     "n_moon_buttom":[
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/2247696110",
-            "moontype":"n",
-            "moonsort":1
-        },
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/2247696110A",
-            "moontype":"n",
-            "moonsort":3
-        },
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/1044960115",
-            "moontype":"n",
-            "moonsort":2
-        }
+    {
+           "moonfrom":"admob",
+           "moonadid":"ca-app-pub-6337191878285963/9736575944",
+           "moontype":"n",
+           "moonsort":1
+           }
     ],
     "i_moon_lin":[
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/1033173712",
-            "moontype":"i",
-            "moonsort":2
-        },
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/8691691433",
-            "moontype":"i",
-            "moonsort":1
-        },
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/8691691433XX",
-            "moontype":"i",
-            "moonsort":3
-        }
+    {
+           "moonfrom":"admob",
+           "moonadid":"ca-app-pub-6337191878285963/5797330934",
+           "moontype":"i",
+           "moonsort":1
+           }
     ],
     "i_moon_back":[
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/1033173712",
-            "moontype":"i",
-            "moonsort":1
-        },
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/8691691433",
-            "moontype":"i",
-            "moonsort":2
-        },
-        {
-            "moonfrom":"admob",
-            "moonadid":"ca-app-pub-3940256099942544/8691691433XX",
-            "moontype":"i",
-            "moonsort":3
-        }
+    {
+           "moonfrom":"admob",
+           "moonadid":"ca-app-pub-6337191878285963/2297069628",
+           "moontype":"i",
+           "moonsort":1
+           }
     ]
 }"""
 

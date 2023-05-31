@@ -22,8 +22,8 @@ object OkUtil {
     var ip=""
     var countryCode=""
     private val countryList= arrayListOf<CountryBean>()
-    private const val TBA_URL="https://test-influx.mooninternet.net/bodleian/set/mutineer/alfonso"
-    private const val SERVER_URL="https://test.fastmoon.link"
+    private const val TBA_URL="https://influx.mooninternet.net/ram/serape/maestro/upside"
+    private const val SERVER_URL="https://api.fastmoon.link"
 
     fun requestIp(callback:()->Unit){
         if(ip.isNotEmpty()){

@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Moon</string>
-    <string name="admob_id">ca-app-pub-3940256099942544~3347511713</string>
-
+    <string name="admob_id">ca-app-pub-6337191878285963~9804858704</string>
+    <string name="facebook_app_id" translatable="false">690633666149556</string>
 </resources>

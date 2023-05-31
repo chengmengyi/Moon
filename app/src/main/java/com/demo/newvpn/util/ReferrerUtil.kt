@@ -35,13 +35,13 @@ object ReferrerUtil {
     }
 
     fun isBuyUser():Boolean{
-//        val localReferrer = readLocalReferrer()
-//        return localReferrer.contains("fb4a")||
-//                localReferrer.contains("gclid")||
-//                localReferrer.contains("not%20set")||
-//                localReferrer.contains("youtubeads")||
-//                localReferrer.contains("%7B%22")
-        return true
+        val localReferrer = readLocalReferrer()
+        return localReferrer.contains("fb4a")||
+                localReferrer.contains("gclid")||
+                localReferrer.contains("not%20set")||
+                localReferrer.contains("youtubeads")||
+                localReferrer.contains("%7B%22")
+
     }
 
 

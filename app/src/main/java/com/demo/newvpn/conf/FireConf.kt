@@ -22,9 +22,9 @@ object FireConf {
     var isLimitUser=false
     var cloak=true
     private var planb_start="1"
-    private var planb_ratio="100"
+    private var planb_ratio="50"
     var isPlanB=false
-    var moonCloak="2"
+    var moonCloak="1"
 
     private val cityList= arrayListOf<String>()
     private val localList= arrayListOf<ServerBean>()
@@ -32,19 +32,20 @@ object FireConf {
 
     fun readFireConf(){
         checkIsLimitUser()
-        parseServerJson(LocalConf.localServer, localList)
+//        parseServerJson(LocalConf.localServer, localList)
+        LocalConf.localServerList.forEach { it.writeServerId() }
 
-//        val remoteConfig = Firebase.remoteConfig
-//        remoteConfig.fetchAndActivate().addOnCompleteListener {
-//            if(it.isSuccessful){
-//                parsePlanConfig(remoteConfig.getString("moon_config"))
-//
-//                val string = remoteConfig.getString("moon_cloak")
-//                if (string.isNotEmpty()){
-//                    moonCloak=string
-//                }
-//            }
-//        }
+        val remoteConfig = Firebase.remoteConfig
+        remoteConfig.fetchAndActivate().addOnCompleteListener {
+            if(it.isSuccessful){
+                parsePlanConfig(remoteConfig.getString("moon_config"))
+
+                val string = remoteConfig.getString("moon_cloak")
+                if (string.isNotEmpty()){
+                    moonCloak=string
+                }
+            }
+        }
     }
 
     private fun parsePlanConfig(string: String){
@@ -114,11 +115,11 @@ object FireConf {
     private fun checkIsLimitUser(){
         OkUtil.requestIp {
             checkUserCloak()
-//            isLimitUser = if(OkUtil.countryCode.isNotEmpty()){
-//                OkUtil.countryCode.limitArea()
-//            }else{
-//                Locale.getDefault().country.limitArea()
-//            }
+            isLimitUser = if(OkUtil.countryCode.isNotEmpty()){
+                OkUtil.countryCode.limitArea()
+            }else{
+                Locale.getDefault().country.limitArea()
+            }
         }
     }
 
